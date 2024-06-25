@@ -1,0 +1,188 @@
+
+import pathlib
+import textwrap
+import requests
+
+API_KEY="sk-proj-a6hADHopdGV0IMEPkXFvT3BlbkFJzaiDHXgqKXd51HHvdF5r"
+
+from openai import OpenAI
+client = OpenAI(
+  api_key=API_KEY,
+)
+
+import requests
+import json,re
+from time import sleep
+vuln_id = 1
+vulnerability_list=[]
+unprocessedFiles=[]
+processedFiles=[]
+common_code_file_extensions = (
+            '.py',  # Python
+            '.js',  # JavaScript
+            '.php',  # PHP
+            '.c',   # C
+            '.cpp',  # C++
+            '.cs',  # C#
+            '.java',  # Java
+            '.rb',  # Ruby
+            '.go',  # Go
+            '.swift',  # Swift
+            '.ts',  # TypeScript
+            '.m',   # Objective-C
+            '.rs',  # Rust
+            '.lua',  # Lua
+            '.pl',  # Perl
+            '.sh',  # Shell
+            '.r',   # R
+            '.kt',  # Kotlin
+            '.dart',  # Dart
+            '.groovy',  # Groovy
+            '.vb',  # Visual Basic
+            '.vbs',  # VBScript
+            '.f', '.f90', '.f95',  # Fortran
+            '.asm',  # Assembly
+            '.s',  # Assembly
+            '.h', '.hpp',  # C/C++ Header
+            '.hh',  # C++ Header
+            '.vue',  # Vue.js
+            '.jsx',  # React JSX
+            '.tsx',   # TypeScript with JSX
+            '.html',  # HTML
+            '.css',  # CSS
+            '.xml',  # XML
+            '.yaml',  # YAML
+            '.json',  # JSON
+            '.conf',  # Configuration
+            '.cfg',  # Configuration
+            '.sh'
+        )
+def read_files_in_directory(directory,output):
+    nooffiles=0
+    nooflines=0
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.lower().endswith(common_code_file_extensions):
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r') as f:
+                        file_contents = f.read()
+                        print("#"*100)
+                        output.write("#"*100+"\n")
+                        print(f"File: {file_path}")
+                        output.write(f"File: {file_path}\n")
+                        analyze_file(file_path,file_contents,output)
+                        print("#"*100)
+                        output.write("#"*100+"\n")
+                        processedFiles.append(file_path)
+                        nooffiles=nooffiles+1
+                        nooflines=nooflines+len(file_contents)
+                except Exception as e:
+                    print(e)
+                    unprocessedFiles.append(file_path)
+                    print("Error in Parsing File")
+    print(f"Total Number of Files Processes is '{nooffiles}' and total Number of lines processed is : '{nooflines}'")
+    for file_path in unprocessedFiles:
+        try:
+            f = open(file_path, 'r')
+            file_contents = f.read()
+            analyze_file(file_path,file_contents)
+        except:
+            continue
+
+
+def scanthedir(directory):
+    global vulnerability_list
+    print(directory)
+    path=os.getcwd()
+    # Define the directory path and the filename
+    directory_path = os.getcwd()
+    filename = "output"+directory+".txt"
+    filepath = os.path.join(directory_path, filename)
+    output=open(filepath,"w")
+    read_files_in_directory(directory,output)
+    output.write("\n")
+    output.write("#"*100+"\n")
+    output.write(str(unprocessedFiles))
+    output.write("#"*100+"\n")
+    vuln={}
+    output.write(str(unprocessedFiles))
+    filename2="vulnerablities_"+directory+".json"
+    filepath2 = os.path.join(directory_path, filename2)
+    f = open(filepath2, 'w')
+    vuln["vulnerabilities"] = vulnerability_list
+    json.dump(vuln, f, indent=4)
+    f.close()
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time} seconds")
+
+def extract_vulnerability(text):
+    # Refined Regular Expression Pattern
+    pattern = r'Vulnerability: (.*?)\.?Severity: (.*?)Line: (.*?)Code:\s*((?:.|\n)*?)Explanation: (.*)' 
+    match = re.search(pattern, text, re.DOTALL)
+
+    if match:
+        return {
+            "Vulnerability": match.group(1).strip(),
+            "Severity": match.group(2).strip(),
+            "Line": match.group(3).strip(),
+            "Code": match.group(4).strip(),
+            "Explanation": match.group(5).strip()
+        }
+    else:
+        return None
+
+def create_vulndadta(vulnerabilities,file):
+    global vuln_id
+    global vulnerability_list
+    print("Creating VUln Index")
+    vulnerability_sections = [section for section in vulnerabilities.split("\n\n") if section.strip()]
+    for section in vulnerability_sections:
+        vulnerability_data = extract_vulnerability(section)
+        if vulnerability_data:
+            vulnerability_data['file']=file
+            vulnerability_list.append(vulnerability_data)
+    # Output JSON
+
+
+def analyze_file(file_path,file,output):
+    print(len(vulnerability_list))
+    file_content = file
+    try:
+        system_prompt = '''Pretend You are a skilled application security engineer doing a static code analysis on a code repository. Analyze the following source code for potential security vulnerabilities. Consider common threat categories like injection vulnerabilities (SQLi, XSS), buffer overflows, insecure configuration, weak authentication/authorization, insufficient input validation, and use of outdated libraries. 
+        You will be sent code, which you should assess for potential vulnerabilities. List any security vulnerability in below source code. Ensure to include vulnerable code, line numbers and other details in a human readable secure source code reporting format. Dont report those issues where you are not certain, dont report version related issues, focus only on code, I/O and any function calls and dont give any generic recommendations if code is clean. Output vulnerabilities found in this format: "Vulnerability: [Vulnerability Name]. Severity:[Severity of the Vulnerablity]. Line: [Line Number]. Code: [Code snippet of the vulnerable line(s) of code without any new line replace new line with tab] Explanation: [Explanation of the vulnerability]\n"
+        Also check if there are any hardcoded keys and secrets in the code.If no vulnerablities found mention No VUlnerablities Found. Stay in character for each response.
+        '''   
+        user_prompt =  "The path of the file is " + file_path+".\n\nThe code for the file is as follows:\n\n"+ file_content
+        completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        )
+        extracted_text = completion.choices[0].message.content
+        data=extracted_text
+        print(data)
+        create_vulndadta(data,file_path)
+        output.write(str(data))
+        output.write("\n")
+    except Exception as e:
+        print(e)
+        unprocessedFiles.append(file_path)
+        print("No Vulnerabilities Found. ")
+        return
+
+import os
+import time
+start_time = time.time()
+print(vulnerability_list)
+dirToScan = input("Please enter The folder in the current Directory to scan: ")
+for root, dirs, files in os.walk(dirToScan):
+    for file in files:
+        if file.lower().endswith(common_code_file_extensions):
+            file_path = os.path.join(root, file)
+            print(file_path)
+scanthedir(dirToScan)
+

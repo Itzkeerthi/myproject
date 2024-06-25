@@ -1,0 +1,132 @@
+{
+    "vulnerabilities": [
+        {
+            "Vulnerability": "Cross Site Request Forgery (CSRF) Protection Bypass.",
+            "Severity": "High.",
+            "Line": "45.",
+            "Code": "if( $vulnerabilityFile == 'high.php' || $vulnerabilityFile == 'impossible.php' )",
+            "Explanation": "The code does not properly validate the incoming request when checking if the CSRF protection token should be included. In this case, if the vulnerability file is set to 'high.php' or 'impossible.php', the tokenField() function is not called to generate the CSRF token. This can lead to a potential CSRF protection bypass vulnerability.",
+            "file": "csrf\\index.php"
+        },
+        {
+            "Vulnerability": "Hardcoded Secret in JavaScript Code.",
+            "Severity": "Medium.",
+            "Line": "18.",
+            "Code": "window.open(\\\"\" . DVWA_WEB_PAGE_TO_ROOT . \"vulnerabilities/csrf/test_credentials.php\\\"",
+            "Explanation": "The JavaScript code contains a hardcoded URL to 'test_credentials.php' which can be considered a security risk as sensitive operations or endpoints should not be exposed directly in the frontend code.",
+            "file": "csrf\\index.php"
+        },
+        {
+            "Vulnerability": "SQL Injection.",
+            "Severity": "High.",
+            "Line": "18.",
+            "Code": "$query  = \"SELECT * FROM `users` WHERE user='$user' AND password='$pass';\";.",
+            "Explanation": "The code directly concatenates user input ($user and $pass) into the SQL query without proper sanitization, making it vulnerable to SQL Injection attacks. An attacker could manipulate the input to execute arbitrary SQL queries.",
+            "file": "csrf\\test_credentials.php"
+        },
+        {
+            "Vulnerability": "Use of MD5 for password hashing.",
+            "Severity": "Medium.",
+            "Line": "13.",
+            "Code": "$pass = md5( $pass );.",
+            "Explanation": "Using MD5 for password hashing is considered weak and insecure. MD5 is no longer recommended for password hashing due to its vulnerability to brute force attacks and its potential for collisions.",
+            "file": "csrf\\test_credentials.php"
+        },
+        {
+            "Vulnerability": "Hardcoded keys/secrets.",
+            "Severity": "Low.",
+            "Line": "3.",
+            "Code": "define( 'DVWA_WEB_PAGE_TO_ROOT', '../../' );.",
+            "Explanation": "The code contains a hardcoded path in the definition of DVWA_WEB_PAGE_TO_ROOT. Hardcoding sensitive information like paths could expose information to attackers if the code is accessed or compromised.",
+            "file": "csrf\\test_credentials.php"
+        },
+        {
+            "Vulnerability": "Cross-Site Scripting (XSS).",
+            "Severity": "Medium.",
+            "Line": "4-93.",
+            "Code": "<table width='100%' bgcolor='white' style=\"border:2px #C0C0C0 solid\">...<p>Reference: <?php echo dvwaExternalLinkUrlGet( 'https://owasp.org/www-community/attacks/csrf' ); ?></p>",
+            "Explanation": "The code within the table element is vulnerable to XSS as it is directly outputting user-controlled data without proper sanitization. This can be exploited by an attacker to execute malicious scripts in the context of the user's browser.",
+            "file": "csrf\\help\\help.php"
+        },
+        {
+            "Vulnerability": "SQL Injection.",
+            "Severity": "High.",
+            "Line": "31.",
+            "Code": "$insert = \"UPDATE `users` SET password = '\" . $pass_new . \"' WHERE user = '\" . $current_user . \"';\".",
+            "Explanation": "The values of $pass_new and $current_user are directly concatenated into the SQL query without proper sanitization, making the code vulnerable to SQL injection attacks.",
+            "file": "csrf\\source\\high.php"
+        },
+        {
+            "Vulnerability": "Insufficient input validation.",
+            "Severity": "Medium.",
+            "Line": "13-17.",
+            "Code": "if (array_key_exists(\"HTTP_USER_TOKEN\", $_SERVER) && array_key_exists(\"password_new\", $data) && array_key_exists(\"password_conf\", $data) && array_key_exists(\"Change\", $data)) {.",
+            "Explanation": "The code does not perform sufficient input validation on the incoming data before processing it, which can lead to unexpected behavior and possible security issues.",
+            "file": "csrf\\source\\high.php"
+        },
+        {
+            "Vulnerability": "SQL Injection.",
+            "Severity": "High.",
+            "Line": "12, 21, 32, 37.",
+            "Code": "$pass_curr = stripslashes( $pass_curr );\n\t$pass_curr = ((isset($GLOBALS[\"___mysqli_ston\"]) && is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_real_escape_string($GLOBALS[\"___mysqli_ston\"],  $pass_curr ) : ((trigger_error(\"[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.\", E_USER_ERROR)) ? \"\" : \"\"));",
+            "Explanation": "The code is attempting to prevent SQL injection by using `mysqli_real_escape_string`, however, it is not an effective way to prevent SQL injection. Furthermore, the `mysqli_real_escape_string` function should not be used in conjunction with prepared statements as it may lead to insecurity.",
+            "file": "csrf\\source\\impossible.php"
+        },
+        {
+            "Vulnerability": "Lack of parameterized queries.",
+            "Severity": "High.",
+            "Line": "32, 39.",
+            "Code": "$data = $db->prepare( 'SELECT password FROM users WHERE user = (:user) AND password = (:password) LIMIT 1;' );\n\t$data = $db->prepare( 'UPDATE users SET password = (:password) WHERE user = (:user);' );",
+            "Explanation": "The queries are using values directly in the query string instead of using parameterized queries. This makes the code vulnerable to SQL injection attacks.",
+            "file": "csrf\\source\\impossible.php"
+        },
+        {
+            "Vulnerability": "Lack of input validation.",
+            "Severity": "Medium.",
+            "Line": "5, 7, 9.",
+            "Code": "checkToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' );\n\t$pass_curr = $_GET[ 'password_current' ];\n\t$pass_new  = $_GET[ 'password_new' ];\n\t$pass_conf = $_GET[ 'password_conf' ];",
+            "Explanation": "The code is directly using input from the `$_GET` array without proper validation. This can lead to various injection attacks like XSS or CSRF.",
+            "file": "csrf\\source\\impossible.php"
+        },
+        {
+            "Vulnerability": "SQL Injection.",
+            "Severity": "High.",
+            "Line": "12.",
+            "Code": "$insert = \"UPDATE `users` SET password = '$pass_new' WHERE user = '\" . $current_user . \"';\";",
+            "Explanation": "The user input $current_user is concatenated directly into the SQL query without proper sanitization, making the code vulnerable to SQL injection attacks.",
+            "file": "csrf\\source\\low.php"
+        },
+        {
+            "Vulnerability": "Use of md5 for password hashing.",
+            "Severity": "High.",
+            "Line": "10.",
+            "Code": "$pass_new = md5( $pass_new );",
+            "Explanation": "Using the md5 hash function for password hashing is considered insecure as it is fast and easily crackable. It is recommended to use stronger and slower hashing algorithms like bcrypt or Argon2 for secure password hashing.",
+            "file": "csrf\\source\\low.php"
+        },
+        {
+            "Vulnerability": "SQL Injection.",
+            "Severity": "High.",
+            "Line": "16.",
+            "Code": "$insert = \"UPDATE `users` SET password = '$pass_new' WHERE user = '\" . $current_user . \"';\";",
+            "Explanation": "The code directly concatenates user input ($current_user) into the SQL query without proper sanitization, making it vulnerable to SQL injection attacks. An attacker could manipulate the $current_user variable to perform SQL injection and potentially manipulate the database.",
+            "file": "csrf\\source\\medium.php"
+        },
+        {
+            "Vulnerability": "Insufficient Input Validation.",
+            "Severity": "Medium.",
+            "Line": "4.",
+            "Code": "if( stripos( $_SERVER[ 'HTTP_REFERER' ] ,$_SERVER[ 'SERVER_NAME' ]) !== false ) {",
+            "Explanation": "The code uses HTTP Referer header to check the source of the request, but HTTP Referer can be easily manipulated or blocked. It's not a reliable method for validating the source of a request. A more secure approach would be to implement CSRF tokens to prevent cross-site request forgery attacks.",
+            "file": "csrf\\source\\medium.php"
+        },
+        {
+            "Vulnerability": "Use of Deprecated Function.",
+            "Severity": "Low.",
+            "Line": "10.",
+            "Code": "$pass_new = ((isset($GLOBALS[\"___mysqli_ston\"]) && is_object($GLOBALS[\"___mysqli_ston\"])) ? mysqli_real_escape_string($GLOBALS[\"___mysqli_ston\"],  $pass_new ) : ((trigger_error(\"[MySQLConverterToo] Fix the mysql_escape_string() call! This code does not work.\", E_USER_ERROR)) ? \"\" : \"\"));",
+            "Explanation": "The code uses the deprecated function mysqli_real_escape_string, which is not recommended for preventing SQL injection. It's better to use prepared statements to prevent SQL injection securely.",
+            "file": "csrf\\source\\medium.php"
+        }
+    ]
+}

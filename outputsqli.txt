@@ -1,0 +1,184 @@
+####################################################################################################
+File: sqli\index.php
+Vulnerability: SQL Injection. Severity: High. Line: 35. Code: $page[ 'body' ] .= "\n				User ID:"; if( $vulnerabilityFile == 'medium.php' ) { Explanation: The User ID input field in the form is vulnerable to SQL injection attacks as it directly inserts user input into the SQL query without proper sanitization or validation.
+
+Vulnerability: Hardcoded Secrets/Keys. Severity: Medium. Line: 7. Code: require_once DVWA_WEB_PAGE_TO_ROOT . 'dvwa/includes/dvwaPage.inc.php'; Explanation: This line contains a hardcoded path to include a file which may expose sensitive information such as directory structure or naming conventions. It is recommended to store such sensitive information securely and not expose them in the code.
+
+Vulnerability: Insufficient Input Validation. Severity: Medium. Line: 22. Code: $method = 'GET'; Explanation: The 'method' variable is being set to 'GET' without proper validation or sanitization. This could potentially lead to unexpected behavior or security risks if the variable is manipulated by an attacker.
+
+Vulnerability: Hardcoded Secrets/Keys. Severity: Medium. Line: 39. Code: if( $vulnerabilityFile == 'impossible.php' ) Explanation: The hardcoded comparison values like 'impossible.php' may expose internal implementation details and should be avoided to prevent potential security risks.
+
+Vulnerability: Hardcoded Secrets/Keys. Severity: Medium. Line: 41, 49, 60. Code: $vulnerabilityFile = 'low.php'; $vulnerabilityFile = 'medium.php'; $vulnerabilityFile = 'high.php'; Explanation: The hardcoded filenames assigned to the 'vulnerabilityFile' variable could potentially expose information about the application's vulnerability structure and pose a security risk if intercepted by an attacker.
+
+Vulnerability: Hardcoded Secrets/Keys. Severity: Medium. Line: 53. Code: $vulnerabilityFile = 'impossible.php'; Explanation: Hardcoding the filename 'impossible.php' could reveal the internal logic of the application, which is not an ideal practice from a security standpoint.
+
+Vulnerability: Hardcoded Secrets/Keys. Severity: Medium. Line: 13. Code: $page[ 'title' ]   = 'Vulnerability: SQL Injection' . $page[ 'title_separator' ].$page[ 'title' ]; Explanation: The hardcoded title 'Vulnerability: SQL Injection' in the page title may expose information about the security vulnerability and should be dynamically generated to avoid revealing such details.
+
+Vulnerability: Hardcoded Secrets/Keys. Severity: Medium. Line: 15, 16, 17, 18. Code: $page[ 'page_id' ] = 'sqli'; $page[ 'help_button' ]   = 'sqli'; $page[ 'source_button' ] = 'sqli'; Explanation: The hardcoded values 'sqli' assigned to various page identifiers could potentially disclose information about the vulnerable page and should be obfuscated to enhance security.
+
+Explanation: No hardcoded keys or secrets are found in the code.
+####################################################################################################
+####################################################################################################
+File: sqli\session-input.php
+Vulnerability: SQL Injection.
+Severity: High.
+Line: 11.
+Code: $_SESSION[ 'id' ] =  $_POST[ 'id' ];
+Explanation: The code directly takes user input from the POST request and stores it in the $_SESSION variable without sanitization or validation. This can lead to SQL Injection vulnerabilities if the input is manipulated by an attacker. Attackers can potentially manipulate the input to execute malicious SQL queries on the database.
+
+Vulnerability: Cross-Site Scripting (XSS).
+Severity: Medium.
+Line: 13.
+Code: $page[ 'body' ] .= "Session ID: {$_SESSION[ 'id' ]}<br /><br /><br />";
+Explanation: The code directly outputs the value of the 'id' session variable without proper encoding or validation, which could allow an attacker to inject and execute malicious scripts in the context of other users' sessions. This can be exploited to steal cookies, session tokens, or perform other malicious actions.
+
+No Vulnerabilities Found.
+####################################################################################################
+####################################################################################################
+File: sqli\test.php
+Vulnerability: SQL Injection. Severity:High. Line: 5-7. Code: mssql_connect($host, $username, $password);
+Explanation: The code is using the deprecated and vulnerable mssql_connect function which is prone to SQL injection attacks. The sensitive information such as host, username, and password is directly hardcoded into the code, making it easier for an attacker to extract this information and exploit the database. This code should be updated to use parameterized queries or prepared statements to prevent SQL injection attacks.
+
+Vulnerability: Hardcoded credentials. Severity:High. Line: 2-3. Code: $username = "dvwa"; $password = "password";
+Explanation: The database username and password are hardcoded in the source code, which is a significant security risk. Hardcoding sensitive information like passwords in the code makes it easier for attackers to extract the credentials and gain unauthorized access to the database. These credentials should be stored securely, such as in environment variables or a secure configuration file.
+
+Other issue:
+1. The variable $database is not defined before its use in mssql_select_db function. It will result in an error.
+
+Overall, the code contains critical vulnerabilities that need to be addressed.
+
+####################################################################################################
+####################################################################################################
+File: sqli\help\help.php
+Vulnerability: SQL Injection. 
+Severity: High
+Line: 17
+Code: <pre>Spoiler: <span class="spoiler">?id=a' UNION SELECT "text1","text2";-- -&Submit=Submit</span>.</pre>
+Explanation: The code is vulnerable to SQL Injection as it is directly inserting user input into the SQL query without proper sanitization or parameterization. An attacker can manipulate the input to perform malicious SQL queries like UNION SELECT to extract sensitive data or perform other harmful actions on the database.
+
+Vulnerability: SQL Injection. 
+Severity: Medium
+Line: 34
+Code: <pre>Spoiler: <span class="spoiler">?id=a UNION SELECT 1,2;-- -&Submit=Submit</span>.</pre>
+Explanation: The code is still susceptible to SQL Injection even though it uses mysql_real_escape_string function, as the SQL query does not have quotes around the parameter, making it vulnerable to manipulation by attackers.
+
+Vulnerability: SQL Injection.
+Severity: High
+Line: 44
+Code: <pre>Spoiler: <span class="spoiler">ID: a' UNION SELECT "text1","text2";-- -&Submit=Submit</span>.</pre>
+Explanation: The code is vulnerable to SQL Injection as the input values are being transferred to the vulnerable query via session variables, allowing attackers to manipulate the input and execute malicious queries.
+
+No Vulnerabilities Found.
+####################################################################################################
+####################################################################################################
+File: sqli\source\high.php
+Vulnerability: SQL Injection. Severity: High. Line: 8. Code: $id = $_SESSION[ 'id' ];
+Explanation: The variable $id is directly taken from the session without any validation or sanitization, making it vulnerable to SQL injection attacks when used in the SQL query on line 11.
+
+Vulnerability: SQL Injection. Severity: High. Line: 11. Code: $query  = "SELECT first_name, last_name FROM users WHERE user_id = '$id' LIMIT 1;";
+Explanation: The SQL query is constructed using the $id variable without sanitization, which opens up the possibility of SQL injection attacks if the $id variable is manipulated to include malicious SQL code.
+
+Vulnerability: Lack of Input Validation. Severity: Medium. Line: 5. Code: $id = $_SESSION[ 'id' ];
+Explanation: The code does not perform any input validation on the user input stored in the $_SESSION['id'] variable before using it directly in a SQL query, which can lead to security vulnerabilities like SQL injection.
+
+Vulnerability: Lack of Output Escaping. Severity: Medium. Line: 19. Code: $html .= "<pre>ID: {$id}<br />First name: {$first}<br />Surname: {$last}</pre>";
+Explanation: The code does not escape the output values $id, $first, and $last when displaying them to the end user, which could lead to cross-site scripting (XSS) vulnerabilities if these values contain malicious scripts.
+
+No Vulnerabilities Found.
+####################################################################################################
+####################################################################################################
+File: sqli\source\impossible.php
+Vulnerability: SQL Injection. 
+Severity: High. 
+Line: 12. 
+Code: $id = $_GET[ 'id' ];
+Explanation: The code directly uses user input ($_GET['id']) in the SQL query without proper sanitization or validation, making it vulnerable to SQL injection attacks.
+
+Vulnerability: Lack of Input Validation. 
+Severity: Medium. 
+Line: 9. 
+Code: checkToken( $_REQUEST[ 'user_token' ], $_SESSION[ 'session_token' ], 'index.php' );
+Explanation: The input parameter 'user_token' is being used without proper validation. Input validation should be implemented to avoid any potential security risks.
+
+Vulnerability: Lack of Authorization. 
+Severity: Medium. 
+Line: 32. 
+Code: generateSessionToken();
+Explanation: The code seems to generate an Anti-CSRF token without any proper authorization or validation process, which could lead to potential security vulnerabilities.
+
+No Vulnerabilities Found.
+####################################################################################################
+####################################################################################################
+File: sqli\source\low.php
+Vulnerability: SQL Injection (SQLi).
+Severity: High.
+Line: 7-10.
+Code: 	$id = $_REQUEST[ 'id' ];
+	$query  = "SELECT first_name, last_name FROM users WHERE user_id = '$id';";
+	$result = mysqli_query($GLOBALS["___mysqli_ston"],  $query ) or die( '<pre>' . ((is_object($GLOBALS["___mysqli_ston"])) ? mysqli_error($GLOBALS["___mysqli_ston"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );
+Explanation: The code directly concatenates user input ($_REQUEST['id']) into the SQL query without proper sanitization or parameterization, making it vulnerable to SQL injection attacks.
+
+Vulnerability: Hardcoded Secrets.
+Severity: Medium.
+Line: 14.
+Code: case MYSQL:
+Explanation: The case for the MySQL database contains a reference to $_DVWA['SQLI_DB'] which appears to be a configuration setting. Depending on the value of this setting, the code interacts with different database types. The hardcoded reference to MySQL could potentially leak information about the application's configuration or setup.
+
+Vulnerability: Commented Out Code.
+Severity: Low.
+Line: 21-22.
+Code: #$sqlite_db_connection = new SQLite3($_DVWA['SQLITE_DB']);
+	#$sqlite_db_connection->enableExceptions(true);
+Explanation: The commented out code suggests that SQLite3 connection and exception handling code may not be in use or properly configured, which could impact error handling and possibly security in the application.
+
+Vulnerability: Unused Code.
+Severity: Low.
+Line: 23-24.
+Code: $query  = "SELECT first_name, last_name FROM users WHERE user_id = '$id';";
+	#print $query;
+Explanation: The code to print the query is commented out and unused. While not a critical vulnerability, it adds to code clutter and may increase confusion during maintenance.
+
+No Vulnerabilities Found.
+####################################################################################################
+####################################################################################################
+File: sqli\source\medium.php
+Vulnerability: SQL Injection (SQLi).
+Severity: High.
+Line: 6.
+Code: $id = $_POST[ 'id' ];
+Explanation: The code directly takes user input from the POST request without any input validation or sanitization, making it vulnerable to SQL Injection attacks. Although mysqli_real_escape_string is used on line 8, it is not a reliable method to prevent SQL injection vulnerabilities. It's recommended to use parameterized queries or prepared statements to securely handle user input.
+
+Vulnerability: Hardcoded Database Connection Information.
+Severity: Medium.
+Line: 25.
+Code: $GLOBALS["___mysqli_ston"].
+Explanation: The code contains a hardcoded database connection variable "$GLOBALS["___mysqli_ston"]", which may expose sensitive database credentials if the code is publicly accessible. It is recommended to store sensitive information like database credentials in secure configuration files outside of the web root directory.
+
+Vulnerability: Lack of CSRF Protection.
+Severity: Medium.
+Line: 4.
+Code: isset( $_POST[ 'Submit' ] ).
+Explanation: The code does not include any protection against Cross-Site Request Forgery (CSRF) attacks. Adding CSRF tokens to validate the origin of the requests can help mitigate this vulnerability.
+
+Vulnerability: Error Handling Disclosure.
+Severity: Low.
+Line: 52.
+Code: echo "Error in fetch ".$sqlite_db->lastErrorMsg();
+Explanation: The code directly outputs error messages to the end-users, which can potentially expose sensitive information about the application's backend. It's recommended to handle errors more gracefully without revealing such details to the users.
+
+Vulnerability: Resource Exhaustion.
+Severity: Medium.
+Line: 22.
+Code: global $sqlite_db_connection;
+Explanation: The code does not limit the amount of data that can be retrieved from the database, which could lead to resource exhaustion issues if the query results in a large dataset. Implementing pagination or setting appropriate limits can help prevent this vulnerability.
+
+Hardcoded Keys and Secrets: No hardcoded keys or secrets were found in the provided code.
+
+Overall Assessment: The code contains multiple security vulnerabilities such as SQL Injection, hardcoded database connection information, lack of CSRF protection, error handling disclosure, and potential resource exhaustion. It's crucial to address these issues to enhance the security posture of the application.
+
+
+####################################################################################################
+
+####################################################################################################
+[]####################################################################################################
+[]
